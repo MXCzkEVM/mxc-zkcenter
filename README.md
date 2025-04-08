@@ -1,4 +1,6 @@
-# Testing with hardhat
+# ZkCenter
+
+This repository contains the administration contract for the mining and staking processes on Moonchain. For a deeper understanding of the design concept, please refer to the [Moonchain ZK Lite Paper](https://doc.moonchain.com/docs/Moonchain-Design/zk).
 
 
 
@@ -14,7 +16,7 @@
 
 
 
-## Setup
+## Actions
 
 After clone the repos, run this once to install the npm packages.
 

@@ -6,6 +6,7 @@ import hre from 'hardhat';
 import {ethers, upgrades} from 'hardhat';
 import fs from 'node:fs';
 
+import {MiningGroupToken, SgxMinerToken, ZkCenter} from '../typechain-types';
 import {ContractInfo} from '../typia/output/deployment_list';
 
 import {DeploymentInfo} from './deployment_info';
@@ -128,13 +129,14 @@ async function main() {
   }
   console.log(`  ${gDepolyment.list.contractList.length} contract(s) found.`);
 
-  //
+  // Deploy Tokens
   await deployContract(signer, 'SgxMinerToken', ['SgxMinerToken', 'ZkMiner']);
   await deployContract(signer, 'MiningGroupToken', ['MiningGroupToken', 'ZkGroup']);
 
-  // Get addresses for ZkCenter
+  // Address of TaikoL1
   const TAIKOL1_ADDRESS = '0x6a5c9E342d5FB5f5EF8a799f0cAAB2678C939b0B';
 
+  // Load JSON with abi
   const strTaikoL1 = fs.readFileSync('./mxc-mono/json/TaikoL1.sol/TaikoL1.json').toString();
   const strMxcToken = fs.readFileSync('./mxc-mono/json/MxcToken.sol/MxcToken.json').toString();
   const strL1Staking = fs.readFileSync('./mxc-mono/json/L1Staking.sol/L1Staking.json').toString();
@@ -142,6 +144,7 @@ async function main() {
   const jsonMxcToken = JSON.parse(strMxcToken);
   const jsonL1Staking = JSON.parse(strL1Staking);
 
+  // Resolve address via TaikoL1
   console.log(`TaikoL1: ${TAIKOL1_ADDRESS}`);
   const contractTaikoL1 = new ethers.Contract(TAIKOL1_ADDRESS, jsonTaikoL1.abi, ethers.provider);
   const addressMxcToken =
@@ -152,18 +155,37 @@ async function main() {
   console.log(`MxcToken: ${addressMxcToken}`);
   console.log(`L1Staking: ${addressL1Staking}`);
 
+  // Read address from deployment info
   const addressSgxMinerToken = gDepolyment.getContractInfo('SgxMinerToken')?.proxyAddress;
   const addressMiningGroupToken = gDepolyment.getContractInfo('MiningGroupToken')?.proxyAddress;
   if (!addressSgxMinerToken) {
     throw new Error(`SgxMinerToken is not deployed.`);
   }
   if (!addressMiningGroupToken) {
-    throw new Error(`MiningGroupToken2 is not deployed.`);
+    throw new Error(`MiningGroupToken is not deployed.`);
   }
   console.log(`SgxMinerToken: ${addressSgxMinerToken}`);
   console.log(`MiningGroupToken: ${addressMiningGroupToken}`);
 
+  // Deploy ZkCenter
   await deployContract(signer, 'ZkCenter', [addressSgxMinerToken, addressMiningGroupToken, addressL1Staking, addressMxcToken]);
+
+  // Read ZkCenter Address
+  const addressZkCenter = gDepolyment.getContractInfo('ZkCenter')?.proxyAddress;
+  if (!addressZkCenter) {
+    throw new Error(`ZkCenter is not deployed.`);
+  }
+
+  // Set ZkCenter address to Tokens
+  console.log('Set ZkCenter Address to Token Contracts.');
+  const factorySgxMinerToken = await ethers.getContractFactory('SgxMinerToken', signer);
+  const proxySgxMinerToken = factorySgxMinerToken.attach(addressSgxMinerToken) as SgxMinerToken;
+  const factoryMiningGroupToken = await ethers.getContractFactory('MiningGroupToken', signer);
+  const proxyMiningGroupToken = factoryMiningGroupToken.attach(addressMiningGroupToken) as MiningGroupToken;
+
+  await proxySgxMinerToken.setZkCenter(addressZkCenter);
+  await proxyMiningGroupToken.setZkCenter(addressZkCenter);
+  console.log(' Done.');
 }
 
 // We recommend this pattern to be able to use async/await everywhere

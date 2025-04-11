@@ -13,6 +13,8 @@ async function main() {
 
   //
   console.log(`Current Block: ${await ethers.provider.getBlockNumber()}`);
+  console.log(`Chain ID: ${(await ethers.provider.getNetwork()).chainId}`);
+  console.log(`Balance: ${ethers.formatEther(await ethers.provider.getBalance(signer.address, 'latest'))}`);
 
 }
 

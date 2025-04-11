@@ -40,9 +40,11 @@ contract ZkCenter is
         miningGroupToken = IMiningGroupToken(_miningGroupToken);
         l1Staking = IL1Staking(_L1Staking);
         mxcToken = IMxcToken(_MxcToken);
-        // Default fee/commisiion
-        adminFee = 200; // 2%
-        commissionRate = 1900; // 19%
+        // Default
+        adminFee = 200; // 2% Admin Fee
+        commissionRate = 1900; // 19% Commission
+        maxRewardRatio = 0; // Disabled
+        adminFeeRecipient = _msgSender();
     }
 
     /// @notice Called when deployed
@@ -90,10 +92,7 @@ contract ZkCenter is
     }
 
     /// @notice Set Administration Fee and Commission Rate
-    function setFee(
-        uint256 admin,
-        uint256 commission
-    ) external onlyController {
+    function setFee(uint256 admin, uint256 commission) external onlyController {
         uint256 total = admin + commission;
         // Max limited to 90% both
         if (total > 9000) {
@@ -101,6 +100,17 @@ contract ZkCenter is
         }
         adminFee = admin;
         commissionRate = commission;
+    }
+
+    /// @notice Set Recipient for Administration Fee
+    function setAdminFeeRecipient(address recipient) external onlyController{
+        adminFeeRecipient = recipient;
+    }
+
+    /// @notice Set max reward amount ratio
+    /// @param ratio The max claim ratio
+    function setMaxRewardRatio(uint256 ratio) external onlyController{
+        maxRewardRatio = ratio;
     }
 
     //========================================================================
@@ -176,11 +186,7 @@ contract ZkCenter is
         }
 
         // Must without staking
-        (
-            uint256 _amount,
-            uint256 _last_claimed,
-            uint256 _withdrawal_req
-        ) = l1Staking.stakingUserState(_msgSender());
+        (uint256 _amount, , ) = l1Staking.stakingUserState(_msgSender());
         if (_amount != 0) {
             revert GROUP_WITH_STAKING();
         }
@@ -334,6 +340,7 @@ contract ZkCenter is
             uint256 admin_fee = (_amount * adminFee) / 10000;
             _amount = _amount - admin_fee;
             mxcToken.transfer(_msgSender(), _amount);
+            mxcToken.transfer(adminFeeRecipient, admin_fee);
         } else {
             address group_leader = miningGroupToken.ownerOf(_sender_gid);
             uint256 admin_fee = (_amount * adminFee) / 10000;
@@ -341,6 +348,7 @@ contract ZkCenter is
             _amount = _amount - admin_fee - commision;
             _commissionPool[group_leader] += commision;
             mxcToken.transfer(_msgSender(), _amount);
+            mxcToken.transfer(adminFeeRecipient, admin_fee);
         }
     }
 

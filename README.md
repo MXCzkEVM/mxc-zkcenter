@@ -47,3 +47,37 @@ Test on local with harthat.
 yarn test
 ```
 
+
+
+## Deployment
+
+Set private key of the deployer.
+
+```
+export PRIVATE_KEY=<KEY>
+```
+
+Set the arbiscan API key
+
+```
+export ETHERSCAN_API_KEY=<API_KEY>
+```
+
+
+
+Run the script to deploy.
+
+```
+npx hardhat --network arbitrum_sepolia run deploy/deploy_zkcenter.ts
+```
+
+The deployment process checks against a JSON file named after the network. During the initial deployment, this JSON file is created. For subsequent runs, the script compares the `name2()` value of the contract with the corresponding `expectedName2` field in the JSON file. If they do not match, a contract upgrade will be triggered. Therefore, when updating a contract, make sure to update both the return value of `name2()` and the `expectedName2` field in the JSON file. This ensures the deployment script can handle the process correctly.
+
+
+
+Verify the deployed contract.
+
+```
+npx hardhat verify --network arbitrum_sepolia <CONTRACT ADDRESS>
+```
+

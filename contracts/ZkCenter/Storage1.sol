@@ -5,8 +5,8 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 
 import "../SgxMinerToken/ISgxMinerToken.sol";
 import "../MiningGroupToken/IMiningGroupToken.sol";
-import "../mxc-mono/IL1Staking.sol";
-import "../mxc-mono/IMxcToken.sol";
+import "../../mxc-mono/IL1Staking.sol";
+import "../../mxc-mono/IMxcToken.sol";
 
 import "./IZkCenter.sol";
 
@@ -29,6 +29,8 @@ contract Storage1 {
 
     uint256 public adminFee; // in 0.01%, a value of 100 means 1%
     uint256 public commissionRate; // in 0.01%, a value of 1800 means 18%
+    uint256 public maxRewardRatio;    // in 0.01%
+    address public adminFeeRecipient;
 
     // Gap
     uint256[50] private __gap;

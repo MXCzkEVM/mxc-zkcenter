@@ -11,7 +11,7 @@ import {L1StakingMock, MiningGroupToken, MxcTokenMock, SgxMinerToken, ZkCenter} 
 
 class TestUtil {
   // Deploy to Hardhat and return contracts
-  static _deployToHardhat(aProverService: Signer):
+  static _deployToHardhat():
       Promise<[ZkCenter, SgxMinerToken, MiningGroupToken, L1StakingMock, MxcTokenMock]> {
     return new Promise(async function(aFulfill, aReject) {
       if (hre.network.name != 'hardhat') {
@@ -66,7 +66,6 @@ class TestUtil {
       // Setup
       (await proxySgxMinerToken.setZkCenter(addressZkCenter)).wait();
       (await proxyMiningGroupToken.setZkCenter(addressZkCenter)).wait();
-      (await proxyZkCenter.setController(await aProverService.getAddress(), true)).wait();
 
       //
       aFulfill([proxyZkCenter, proxySgxMinerToken, proxyMiningGroupToken, proxyL1StakingMock, proxyMxcTokenMock]);
@@ -74,10 +73,10 @@ class TestUtil {
   }
 
   // Prepare contract
-  static prepareContracts(aProverService: Signer):
+  static prepareContracts():
       Promise<[ZkCenter, SgxMinerToken, MiningGroupToken, L1StakingMock, MxcTokenMock]> {
     if (hre.network.name == 'hardhat') {
-      return TestUtil._deployToHardhat(aProverService);
+      return TestUtil._deployToHardhat();
     } else {
       return new Promise(async function(aFulfill, aReject) {
         aReject(`Network ${hre.network.name} not supported.`);

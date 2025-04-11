@@ -59,7 +59,8 @@ const config: HardhatUserConfig = {
   },  
   etherscan: {
     apiKey: {
-      geneva: "X"
+      geneva: process.env.ETHERSCAN_API_KEY || "X",
+      arbitrum_sepolia: process.env.ETHERSCAN_API_KEY || "X"
     },
     customChains: [
       {
@@ -68,6 +69,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://geneva-explorer-v1.moonchain.com/api",
           browserURL: "https://geneva-explorer-v1.moonchain.com"
+        }
+      },
+      {
+        network: "arbitrum_sepolia",
+        chainId: 421614,
+        urls: {
+          apiURL: "https://api-sepolia.arbiscan.io/api",
+          browserURL: "https://sepolia.arbiscan.io"
         }
       },
     ]

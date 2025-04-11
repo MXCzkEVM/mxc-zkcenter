@@ -30,14 +30,15 @@
     "@openzeppelin/contracts-upgradeable": "^4.9.6",
     "@typechain/ethers-v6": "^0.5.1",
     "@typechain/hardhat": "^9.1.0",
-    "erc6551": "^0.3.1",
     "ethers": "^6.13.2",
     "hardhat": "^2.22.7",
-    "hardhat-gas-reporter": "^1.0.8"
+    "hardhat-gas-reporter": "^1.0.8",
+    "typia": "^6.8.0"
   },
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "clean": "rm -Rf cache artifacts typechain-types"
+    "clean": "rm -Rf cache artifacts typechain-types .openzeppelin",
+    "update_typia": "typia generate --input typia/input --output typia/output --project tsconfig.json"
   }
 }

@@ -34,6 +34,14 @@ interface IZkCenter {
     /// @param commission rate in 0.01%
     function setFee(uint256 admin, uint256 commission) external;
 
+    /// @notice Set Recipient for Administration Fee
+    /// @param recipient The Recipient
+    function setAdminFeeRecipient(address recipient) external;
+
+    /// @notice Set max reward amount ratio
+    /// @param ratio The max claim ratio
+    function setMaxRewardRatio(uint256 ratio) external;
+
     //========================================================================
     //========================================================================
     /// @notice Mint a Miner NFT

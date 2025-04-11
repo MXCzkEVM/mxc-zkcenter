@@ -15,6 +15,7 @@ describe('staking', function() {
   let ownerAddress = '';
   let amyAddress = '';
   let bobAddress = '';
+  let proverServiceAddress = '';
 
   let proxyZkCenter: ZkCenter;
   let proxySgxMinerToken: SgxMinerToken;
@@ -28,12 +29,16 @@ describe('staking', function() {
     // Create wallet for Prover Service
     const prover_rand_wallet = ethers.Wallet.createRandom();
     proverService = await prover_rand_wallet.connect(owner.provider);
-    const proverServiceAddress = await proverService.getAddress();
+    proverServiceAddress = await proverService.getAddress();
     // Ready some ETH for test
     await owner.sendTransaction({to: proverServiceAddress, value: ethers.parseEther('10')});
     // Prepare contracts
     [proxyZkCenter, proxySgxMinerToken, proxyMiningGroupToken, proxyL1StakingMock, proxyMxcTokenMock] =
-        await TestUtil.prepareContracts(proverService);
+        await TestUtil.prepareContracts();
+
+    // Config ZkCenter
+    await proxyZkCenter.setController(proverServiceAddress, true);
+    await proxyZkCenter.setAdminFeeRecipient(proverServiceAddress);
 
     //
     console.log(`        owner: ${ownerAddress}`);
@@ -380,9 +385,14 @@ describe('staking', function() {
       const expected_admin_fee = ethers.parseEther('2000');
       const expected_net_reward = expected_gross - expected_admin_fee;
       const balance_before_claim = await proxyMxcTokenMock.balanceOf(amyAddress);
+      const balance_before_service = await proxyMxcTokenMock.balanceOf(proverService);
       await amyZkCenter.stakeClaimReward();
       const balance_after_claim = await proxyMxcTokenMock.balanceOf(amyAddress);
+      const balance_after_service = await proxyMxcTokenMock.balanceOf(proverService);
+      // Reward goes to amy
       expect(balance_after_claim - balance_before_claim).to.equal(expected_net_reward);
+      // Admin fee goes to prover service
+      expect(balance_after_service - balance_before_service).to.equal(expected_admin_fee);
 
       // Delete group here will revert
       await expect(amyZkCenter.miningGroupDelete()).to.be.revertedWithCustomError(proxyZkCenter, 'GROUP_WITH_STAKING');
@@ -392,7 +402,7 @@ describe('staking', function() {
       expect((await amyZkCenter.stakeGetStatus()).withdrawalRequestEpoch).to.equal(current_epoch);
       current_epoch += lock_period;
       await proxyL1StakingMock.setCurrentEpoch(current_epoch);
-      await amyZkCenter.stakeClaimReward();   // Claim any remaining reward before withdraw
+      await amyZkCenter.stakeClaimReward();  // Claim any remaining reward before withdraw
       const balance_before_withdraw = await proxyMxcTokenMock.balanceOf(amyAddress);
       const receipt_withdraw = await (await amyZkCenter.stakeWithdraw()).wait();
       // stakeWithdraw will call contract L1Staking, a L1Staking event will emitted
@@ -514,21 +524,21 @@ describe('staking', function() {
       expect(await amyZkCenter.stakeGetCommission()).to.equal(0);
       await expect(amyZkCenter.stakeClaimCommission()).to.be.revertedWithCustomError(proxyZkCenter, 'STAKE_NO_COMMISIION');
 
-      // Amy Withdraw 
+      // Amy Withdraw
       await (await amyZkCenter.stakeRequestWithdraw(false)).wait();
       current_epoch += lock_period;
       await proxyL1StakingMock.setCurrentEpoch(current_epoch);
-      await amyZkCenter.stakeClaimReward();   // Claim any remaining reward before withdraw
+      await amyZkCenter.stakeClaimReward();  // Claim any remaining reward before withdraw
       await (await amyZkCenter.stakeWithdraw()).wait();
 
       // Amy try delete group, but Bob still there
       await expect(amyZkCenter.miningGroupDelete()).to.be.revertedWithCustomError(proxyZkCenter, 'GROUP_WITH_MEMBERS');
 
-      // Bob Withdraw 
+      // Bob Withdraw
       await (await bobZkCenter.stakeRequestWithdraw(false)).wait();
       current_epoch += lock_period;
       await proxyL1StakingMock.setCurrentEpoch(current_epoch);
-      await bobZkCenter.stakeClaimReward();   // Claim any remaining reward before withdraw
+      await bobZkCenter.stakeClaimReward();  // Claim any remaining reward before withdraw
       const balance_before_withdraw = await proxyMxcTokenMock.balanceOf(bobAddress);
       const receipt_withdraw = await (await bobZkCenter.stakeWithdraw()).wait();
       // stakeWithdraw will call contract L1Staking, a L1Staking event will emitted
@@ -561,12 +571,12 @@ describe('staking', function() {
       // Create members
       const amy_member_count = 12;
       const bob_member_count = 5;
-      const amy_members:Signer[] = [];
-      const bob_members:Signer[] = [];
-      let rand_wallet:any;
-      
-      for (let i = 0; i < amy_member_count; i ++) {
-        rand_wallet= ethers.Wallet.createRandom();
+      const amy_members: Signer[] = [];
+      const bob_members: Signer[] = [];
+      let rand_wallet: any;
+
+      for (let i = 0; i < amy_member_count; i++) {
+        rand_wallet = ethers.Wallet.createRandom();
         const member = await rand_wallet.connect(owner.provider);
         const member_address = await member.getAddress();
 
@@ -574,8 +584,8 @@ describe('staking', function() {
         await owner.sendTransaction({to: member_address, value: ethers.parseEther('10')});
         await proxyMxcTokenMock.transfer(member_address, ethers.parseEther('10000000'));
       }
-      for (let i = 0; i < bob_member_count; i ++) {
-        rand_wallet= ethers.Wallet.createRandom();
+      for (let i = 0; i < bob_member_count; i++) {
+        rand_wallet = ethers.Wallet.createRandom();
         const member = await rand_wallet.connect(owner.provider);
         const member_address = await member.getAddress();
 
@@ -587,7 +597,7 @@ describe('staking', function() {
       // Join group
       const amy_group_id = await proxyZkCenter.miningGroupGetIdByIndex(0);
       expect(await proxyZkCenter.miningGroupGetLeader(amy_group_id)).to.equal(amyAddress);
-      for (let i = 0; i < amy_member_count; i ++) {
+      for (let i = 0; i < amy_member_count; i++) {
         const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
         const memberMxcToken = await TestUtil.attachMxcToken(proxyMxcTokenMock, amy_members[i]);
 
@@ -596,7 +606,7 @@ describe('staking', function() {
       }
       const bob_group_id = await proxyZkCenter.miningGroupGetIdByIndex(1);
       expect(await proxyZkCenter.miningGroupGetLeader(bob_group_id)).to.equal(bobAddress);
-      for (let i = 0; i < bob_member_count; i ++) {
+      for (let i = 0; i < bob_member_count; i++) {
         const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, bob_members[i]);
         const memberMxcToken = await TestUtil.attachMxcToken(proxyMxcTokenMock, bob_members[i]);
 
@@ -607,11 +617,11 @@ describe('staking', function() {
       expect(await proxyZkCenter.miningGroupGetMemberCount(bob_group_id)).to.equal(bob_member_count);
 
       // Check members
-      for (let i = 0; i < amy_member_count; i ++) {
+      for (let i = 0; i < amy_member_count; i++) {
         expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, i)).to.equal(await amy_members[i].getAddress());
       }
       await expect(proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, amy_member_count)).to.be.reverted;
-      for (let i = 0; i < bob_member_count; i ++) {
+      for (let i = 0; i < bob_member_count; i++) {
         expect(await proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, i)).to.equal(await bob_members[i].getAddress());
       }
       await expect(proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, bob_member_count)).to.be.reverted;
@@ -636,14 +646,17 @@ describe('staking', function() {
       expect(await proxyZkCenter.miningGroupGetMemberCount(bob_group_id)).to.equal(bob_member_count - 1);
 
       // Last member will swap in to deleted indexing space
-      expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, 4)).to.equal(await amy_members[amy_member_count - 1].getAddress());
+      expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, 4))
+          .to.equal(await amy_members[amy_member_count - 1].getAddress());
       expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, 5)).to.equal(await amy_members[5].getAddress());
       expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, 6)).to.equal(await amy_members[6].getAddress());
-      expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, 7)).to.equal(await amy_members[amy_member_count - 2].getAddress());
+      expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, 7))
+          .to.equal(await amy_members[amy_member_count - 2].getAddress());
       expect(await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, 8)).to.equal(await amy_members[8].getAddress());
 
       expect(await proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, 1)).to.equal(await bob_members[1].getAddress());
-      expect(await proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, 2)).to.equal(await bob_members[bob_member_count - 1].getAddress());
+      expect(await proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, 2))
+          .to.equal(await bob_members[bob_member_count - 1].getAddress());
       expect(await proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, 3)).to.equal(await bob_members[3].getAddress());
 
       await proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, amy_member_count - 3);

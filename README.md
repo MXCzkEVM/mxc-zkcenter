@@ -81,3 +81,19 @@ Verify the deployed contract.
 npx hardhat verify --network arbitrum_sepolia <CONTRACT ADDRESS>
 ```
 
+
+
+Update the new address to TaikoL1 if needed.
+
+```
+env PRIVATE_KEY=<OWNER_ADDRESS> npx hardhat --network arbitrum_sepolia run deploy/set_zkcenter_to_taikol1.ts
+```
+
+
+
+Set controller.
+
+```
+env CONTROLLER_ADDRESS=<ADDRESS> npx hardhat --network arbitrum_sepolia run deploy/set_zkcenter_controller.ts 
+```
+

@@ -129,6 +129,11 @@ contract ZkCenter is
         sgxMinerToken.mint(sgxInstanceId);
     }
 
+    /// @notice Burn a Miner NFT
+    function minerBurn(uint256 sgxInstanceId) external nonReentrant onlyController{
+        sgxMinerToken.burn(sgxInstanceId);
+    }
+
     /// @notice Claim a miner
     function minerClaim(uint256 sgxInstanceId) external nonReentrant {
         if (_minerRegistration[sgxInstanceId] != _msgSender()) {

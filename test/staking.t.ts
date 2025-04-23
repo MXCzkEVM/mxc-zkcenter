@@ -121,18 +121,39 @@ describe('staking', function() {
 
     let session_sgx_id = sgx_instance_id;
 
-    it('mintMiner()', async function() {
+    it('Mint and Burn', async function() {
       const amyZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, userAmy);
+      const addressZkCenter = await proxyZkCenter.getAddress();
 
-      const receipt = await (await amyZkCenter.minerMint(sgx_instance_id)).wait();
-      // mintMiner will call contract SgxMinerToken for mint, a event will emitted
-      const events = await TestUtil.filterReceiptEvent(proxySgxMinerToken, receipt!, 'Minted');
-      expect(events.length).to.equal(1);
-      expect(events[0].args[0]).to.equal(sgx_instance_id);
+      const receipt_mint = await (await amyZkCenter.minerMint(sgx_instance_id)).wait();
+      // mintMiner will call contract SgxMinerToken, a SgxMinerToken event will emitted
+      const events_mint = await TestUtil.filterReceiptEvent(proxySgxMinerToken, receipt_mint!, 'Minted');
+      expect(events_mint.length).to.equal(1);
+      expect(events_mint[0].args[0]).to.equal(sgx_instance_id);
+      expect(events_mint[0].args[1]).to.equal(addressZkCenter);
 
       // The initial NFT owner is ZkCenter
       const miner_owner = await proxyZkCenter.minerGetOwner(sgx_instance_id);
-      expect(miner_owner).to.equal(await amyZkCenter.getAddress());
+      expect(miner_owner).to.equal(addressZkCenter);
+
+      // Will be 1 token
+      expect(await proxySgxMinerToken.totalSupply()).to.equal(1);
+
+      // Burn by non controller
+      await expect(amyZkCenter.minerBurn(sgx_instance_id)).to.be.revertedWithCustomError(proxySgxMinerToken, 'CONTROLLABLE_ACCESS_DENIED');
+
+      // Direct burn 
+      await expect(proxySgxMinerToken.burn(session_sgx_id)).to.be.revertedWithCustomError(proxySgxMinerToken, 'ACCESSCONTROL_DENIED');
+
+      // Burn with Controller
+      const receipt_burn = await (await proxyZkCenter.minerBurn(sgx_instance_id)).wait();
+      // mintMiner will call contract SgxMinerToken, a SgxMinerToken event will emitted
+      const events_burn = await TestUtil.filterReceiptEvent(proxySgxMinerToken, receipt_burn!, 'Burned');
+      expect(events_mint.length).to.equal(1);
+      expect(events_mint[0].args[0]).to.equal(sgx_instance_id);
+
+      // No token after burn
+      expect(await proxySgxMinerToken.totalSupply()).to.equal(0);
     });
 
     it('Invalid direct mint', async function() {
@@ -166,6 +187,9 @@ describe('staking', function() {
     });
 
     it('Register and Claim Miner', async function() {
+      // Mint
+      await (await proxyZkCenter.minerMint(sgx_instance_id)).wait();
+      
       // Prover Service Register miner for Amy
       const proverZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, proverService);
       const receiptReg = await (await proverZkCenter.minerRegister(sgx_instance_id, amyAddress)).wait();

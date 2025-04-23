@@ -134,7 +134,16 @@ async function main() {
   await deployContract(signer, 'MiningGroupToken', ['MiningGroupToken', 'ZkGroup']);
 
   // Address of TaikoL1
-  const TAIKOL1_ADDRESS = '0x6a5c9E342d5FB5f5EF8a799f0cAAB2678C939b0B';
+  let addressTaikoL1 = '';
+  if (hre.network.name == 'arbitrum_sepolia') {
+    addressTaikoL1 = '0x6a5c9E342d5FB5f5EF8a799f0cAAB2678C939b0B';
+  }
+  else  if (hre.network.name == 'arbitrum_one'){
+    addressTaikoL1 = '0x54D8864e8855A7B66eE42B8F2Eaa0F2E06bd641a';
+  }
+  else {
+    throw new Error(`Chain '${hre.network.name}' not suppoerted.`);
+  }
 
   // Load JSON with abi
   const strTaikoL1 = fs.readFileSync('./mxc-mono/json/TaikoL1.sol/TaikoL1.json').toString();
@@ -145,8 +154,8 @@ async function main() {
   const jsonL1Staking = JSON.parse(strL1Staking);
 
   // Resolve address via TaikoL1
-  console.log(`TaikoL1: ${TAIKOL1_ADDRESS}`);
-  const contractTaikoL1 = new ethers.Contract(TAIKOL1_ADDRESS, jsonTaikoL1.abi, ethers.provider);
+  console.log(`TaikoL1: ${addressTaikoL1}`);
+  const contractTaikoL1 = new ethers.Contract(addressTaikoL1, jsonTaikoL1.abi, ethers.provider);
   const addressMxcToken =
       (await contractTaikoL1.getFunction('resolve').staticCallResult(ethers.encodeBytes32String('taiko_token'), false))
           .toArray()[0];

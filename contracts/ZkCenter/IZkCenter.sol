@@ -44,13 +44,17 @@ interface IZkCenter {
 
     //========================================================================
     //========================================================================
+    /// @notice Register a miner with wallet address
+    /// @param sgxInstanceId The SGX Instance ID of the miner
+    function minerRegister(uint256 sgxInstanceId, address _to) external;
+    
     /// @notice Mint a Miner NFT
     /// @param sgxInstanceId The SGX Instance ID of the miner
     function minerMint(uint256 sgxInstanceId) external;
 
-    /// @notice Register a miner with wallet address
+    /// @notice Burn a Miner NFT
     /// @param sgxInstanceId The SGX Instance ID of the miner
-    function minerRegister(uint256 sgxInstanceId, address _to) external;
+    function minerBurn(uint256 sgxInstanceId) external;
 
     /// @notice Claim a miner
     /// @param sgxInstanceId The SGX Instance ID of the miner

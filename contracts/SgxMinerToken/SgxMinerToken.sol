@@ -60,7 +60,7 @@ contract SgxMinerToken is
             revert ALREADY_MINTED();
         }
         _safeMint(_msgSender(), _sgxInstanceId);
-        emit Minted(_sgxInstanceId);
+        emit Minted(_sgxInstanceId, _msgSender());
     }
 
     /// @notice Check Sensor NFT minted or not

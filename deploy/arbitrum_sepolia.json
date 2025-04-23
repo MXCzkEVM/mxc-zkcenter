@@ -1,0 +1,33 @@
+{
+  "network": "arbitrum_sepolia",
+  "chainId": "421614",
+  "contractList": [
+    {
+      "deployer": "0x8fdDbE38F5bF4BAb62d3Bc5665B5126Db3a4eBE2",
+      "contractFactoryName": "SgxMinerToken",
+      "contractName2": "SgxMinerToken-v0",
+      "timeUpdated": "2025-04-14T13:14:37.269Z",
+      "proxyAddress": "0x47cD161Af6cF29f2f579fE18eF841726C00ACBd4",
+      "impAddress": "0x94339e6c8557194c29cfB37FD60E37a657234F70",
+      "expectedName2": "SgxMinerToken-v0"
+    },
+    {
+      "deployer": "0x8fdDbE38F5bF4BAb62d3Bc5665B5126Db3a4eBE2",
+      "contractFactoryName": "MiningGroupToken",
+      "contractName2": "MiningGroupToken-v0",
+      "timeUpdated": "2025-04-14T13:14:47.506Z",
+      "proxyAddress": "0xBa5AE283dc589bd3672a6EB9169F7713E5CaE767",
+      "impAddress": "0x4C6096ae5d827c9DDFaAAd3c8376595AC6C64864",
+      "expectedName2": "MiningGroupToken-v0"
+    },
+    {
+      "deployer": "0x8fdDbE38F5bF4BAb62d3Bc5665B5126Db3a4eBE2",
+      "contractFactoryName": "ZkCenter",
+      "contractName2": "ZkCenter-v0",
+      "timeUpdated": "2025-04-17T16:07:06.318Z",
+      "proxyAddress": "0xcc271B2F8E28110bcA013067B64eD086c4FA0c9a",
+      "impAddress": "0x950D71f3eEF00e5F13224C3bf66cB38B1A49B157",
+      "expectedName2": "ZkCenter-v0"
+    }
+  ]
+}

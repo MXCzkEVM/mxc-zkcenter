@@ -40,6 +40,12 @@ const config: HardhatUserConfig = {
       chainId: 421614,
       accounts: [process.env.PRIVATE_KEY || blankAddress],
     },
+    arbitrum_one: {
+      url:
+          process.env.MXC_TESTNET_URL || 'https://arb1.arbitrum.io/rpc',
+      chainId: 42161,
+      accounts: [process.env.PRIVATE_KEY || blankAddress],
+    },
     holesky: {
       url:
           process.env.MXC_TESTNET_URL || 'https://ethereum-holesky-rpc.publicnode.com',
@@ -60,7 +66,8 @@ const config: HardhatUserConfig = {
   etherscan: {
     apiKey: {
       geneva: process.env.ETHERSCAN_API_KEY || "X",
-      arbitrum_sepolia: process.env.ETHERSCAN_API_KEY || "X"
+      arbitrum_sepolia: process.env.ETHERSCAN_API_KEY || "X",
+      arbitrum_one: process.env.ETHERSCAN_API_KEY || "X"
     },
     customChains: [
       {
@@ -77,6 +84,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: "https://api-sepolia.arbiscan.io/api",
           browserURL: "https://sepolia.arbiscan.io"
+        }
+      },
+      {
+        network: "arbitrum_one",
+        chainId: 42161,
+        urls: {
+          apiURL: "https://api.arbiscan.io/api",
+          browserURL: "https://arbiscan.io"
         }
       },
     ]

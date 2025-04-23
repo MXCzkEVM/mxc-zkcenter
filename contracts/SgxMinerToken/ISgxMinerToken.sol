@@ -10,7 +10,7 @@ interface ISgxMinerToken is IERC721EnumerableUpgradeable {
     error NOT_MINTED();
 
     /// @dev This event gets emitted when a NFT minted
-    event Minted(uint256 sgxInstanceId);
+    event Minted(uint256 sgxInstanceId, address tokenOwner);
 
     /// @dev This event gets emitted when a NFT burned
     event Burned(uint256 sgxInstanceId);

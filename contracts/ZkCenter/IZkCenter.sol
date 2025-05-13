@@ -148,4 +148,15 @@ interface IZkCenter {
 
     /// @notice Perform withdraw from staking
     function stakeWithdraw() external;
+
+    //========================================================================
+    //========================================================================
+    /// @notice Deduct reward by 1 epoch (oldest one)
+    /// @param user The user that receive the penalty
+    function penaltyDeductReward(address user) external;
+
+    /// @notice Slash the staked amount
+    /// @param user The user that receive the penalty
+    /// @param rate The rate to slash, 10 is 10%
+    function penaltySlashStaked(address user, uint256 rate) external;
 }

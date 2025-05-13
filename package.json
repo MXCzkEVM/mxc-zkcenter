@@ -38,7 +38,7 @@
   "scripts": {
     "compile": "npx hardhat compile",
     "test": "npx hardhat test",
-    "clean": "rm -Rf cache artifacts typechain-types .openzeppelin",
+    "clean": "rm -Rf cache artifacts typechain-types",
     "update_typia": "typia generate --input typia/input --output typia/output --project tsconfig.json"
   }
 }

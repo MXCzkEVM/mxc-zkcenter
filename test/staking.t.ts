@@ -140,10 +140,12 @@ describe('staking', function() {
       expect(await proxySgxMinerToken.totalSupply()).to.equal(1);
 
       // Burn by non controller
-      await expect(amyZkCenter.minerBurn(sgx_instance_id)).to.be.revertedWithCustomError(proxySgxMinerToken, 'CONTROLLABLE_ACCESS_DENIED');
+      await expect(amyZkCenter.minerBurn(sgx_instance_id))
+          .to.be.revertedWithCustomError(proxySgxMinerToken, 'CONTROLLABLE_ACCESS_DENIED');
 
-      // Direct burn 
-      await expect(proxySgxMinerToken.burn(session_sgx_id)).to.be.revertedWithCustomError(proxySgxMinerToken, 'ACCESSCONTROL_DENIED');
+      // Direct burn
+      await expect(proxySgxMinerToken.burn(session_sgx_id))
+          .to.be.revertedWithCustomError(proxySgxMinerToken, 'ACCESSCONTROL_DENIED');
 
       // Burn with Controller
       const receipt_burn = await (await proxyZkCenter.minerBurn(sgx_instance_id)).wait();
@@ -189,7 +191,7 @@ describe('staking', function() {
     it('Register and Claim Miner', async function() {
       // Mint
       await (await proxyZkCenter.minerMint(sgx_instance_id)).wait();
-      
+
       // Prover Service Register miner for Amy
       const proverZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, proverService);
       const receiptReg = await (await proverZkCenter.minerRegister(sgx_instance_id, amyAddress)).wait();
@@ -687,6 +689,209 @@ describe('staking', function() {
       await expect(proxyZkCenter.miningGroupGetMemberByIndex(amy_group_id, amy_member_count - 2)).to.be.reverted;
       await proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, bob_member_count - 2);
       await expect(proxyZkCenter.miningGroupGetMemberByIndex(bob_group_id, bob_member_count - 1)).to.be.reverted;
+
+      // All withdraw
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        try {
+          await (await memberZkCenter.stakeRequestWithdraw(false)).wait();
+        } catch (aError) {
+        }
+      }
+      for (let i = 0; i < bob_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, bob_members[i]);
+        try {
+          await (await memberZkCenter.stakeRequestWithdraw(false)).wait();
+        } catch (aError) {
+        }
+      }
+
+      current_epoch += lock_period;
+      await proxyL1StakingMock.setCurrentEpoch(current_epoch);
+
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        try {
+          await (await memberZkCenter.stakeClaimReward()).wait();
+          await (await memberZkCenter.stakeWithdraw()).wait();
+        } catch (aError) {
+        }
+      }
+      for (let i = 0; i < bob_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, bob_members[i]);
+        try {
+          await (await memberZkCenter.stakeClaimReward()).wait();
+          await (await memberZkCenter.stakeWithdraw()).wait();
+        } catch (aError) {
+        }
+      }
+
+      // Delete group
+      await (await amyZkCenter.miningGroupDelete()).wait();
+      await (await bobZkCenter.miningGroupDelete()).wait();
+    });
+
+    it('Penalty', async function() {
+      const min_deposit = await proxyL1StakingMock.MIN_DEPOSIT();
+      const lock_period = await proxyL1StakingMock.WITHDRAWAL_LOCK_EPOCH();
+      const proverZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, proverService);
+      const amyZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, userAmy);
+      const amyMxcToken = await TestUtil.attachMxcToken(proxyMxcTokenMock, userAmy);
+      const l1StakingAddress = await proxyL1StakingMock.getAddress();
+
+      //
+      let current_epoch = await proxyL1StakingMock.getCurrentEpoch();
+
+      // Create groups
+      await (await amyZkCenter.miningGroupCreate()).wait();
+
+      // Group leader deposit
+      await amyMxcToken.approve(l1StakingAddress, min_deposit);
+      await (await amyZkCenter.stakeDeposit(min_deposit)).wait();
+
+      // Create members
+      const amy_member_count = 3;
+      const amy_members: Signer[] = [];
+      let rand_wallet: any;
+
+      for (let i = 0; i < amy_member_count; i++) {
+        rand_wallet = ethers.Wallet.createRandom();
+        const member = await rand_wallet.connect(owner.provider);
+        const member_address = await member.getAddress();
+
+        amy_members.push(member);
+        await owner.sendTransaction({to: member_address, value: ethers.parseEther('10')});
+        await proxyMxcTokenMock.transfer(member_address, ethers.parseEther('10000000'));
+      }
+
+      // Join group
+      const amy_group_id = await proxyZkCenter.miningGroupGetIdByIndex(0);
+      expect(await proxyZkCenter.miningGroupGetLeader(amy_group_id)).to.equal(amyAddress);
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        const memberMxcToken = await TestUtil.attachMxcToken(proxyMxcTokenMock, amy_members[i]);
+
+        await memberMxcToken.approve(l1StakingAddress, min_deposit);
+        await (await memberZkCenter.stakeToGroup(amy_group_id, min_deposit)).wait();
+      }
+      expect(await proxyZkCenter.miningGroupGetMemberCount(amy_group_id)).to.equal(amy_member_count);
+
+      // Move forward 2 epoch and deposit reward 2000 and 4000.
+      const num_of_epoch_pass = 2;
+      for (let i = 0; i < num_of_epoch_pass; i++) {
+        const reward_per_epoch = ethers.parseEther(((i + 1) * 2000).toString());
+        await proxyMxcTokenMock.approve(l1StakingAddress, reward_per_epoch);
+        await proxyL1StakingMock['stakingDepositReward(uint256)'](reward_per_epoch);
+        current_epoch++;
+        await proxyL1StakingMock.setCurrentEpoch(current_epoch);
+      }
+
+      // Penalty on past epoch
+      // There are 4 people staked, Amy and 3 members.
+      // 1st epoch has 2000 reward, each one will allocated 500
+      // 2nd epoch has 4000 reward, each one will alliocated 1000
+      // For total two epoch, each one will has 1500 (gross).
+      // Penalty will deduct the oldest one, means the 1st 500.
+      // After penalty, eacho one will has gross 1000.
+      expect(await amyZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('1500'));
+      for (let i = 0; i < num_of_epoch_pass; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        expect(await memberZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('1500'));
+      }
+
+      // Apply penalty to Amy
+      await (await proverZkCenter.penaltyDeductReward(await userAmy.getAddress())).wait();
+      expect(await amyZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('1000'));
+      for (let i = 0; i < num_of_epoch_pass; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        // Penalty will not affect members, prover service need to handle it.
+        expect(await memberZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('1500'));
+      }
+
+      // Apply penalty to members
+      for (let i = 0; i < num_of_epoch_pass; i++) {
+        await (await proverZkCenter.penaltyDeductReward(await amy_members[i].getAddress())).wait();
+      }
+      expect(await amyZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('1000'));
+      for (let i = 0; i < num_of_epoch_pass; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        expect(await memberZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('1000'));
+      }
+
+      // Claim all
+      await (await amyZkCenter.stakeClaimReward()).wait();
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        await (await memberZkCenter.stakeClaimReward()).wait();
+      }
+
+      // Penalty on current epoch
+      // 1000 reward for this epoch. Each one will got 250.
+      const reward1 = ethers.parseEther('1000');
+      await proxyMxcTokenMock.approve(l1StakingAddress, reward1);
+      await proxyL1StakingMock['stakingDepositReward(uint256)'](reward1);
+
+      // Apply penalty to Amy
+      expect(await amyZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('0'));
+      await (await proverZkCenter.penaltyDeductReward(await userAmy.getAddress())).wait();
+
+      // Penalty again, it should no affect on the 2nd epoch 250 reward for Amy
+      await (await proverZkCenter.penaltyDeductReward(await userAmy.getAddress())).wait();
+
+      // Move forward 1 epoch
+      current_epoch++;
+      await proxyL1StakingMock.setCurrentEpoch(current_epoch);
+
+      // No reward on next epoch for Amy, other will has 250.
+      expect(await amyZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('0'));
+      for (let i = 0; i < num_of_epoch_pass; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        expect(await memberZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('250'));
+      }
+
+      // 1000 reward again and move forward 1 epoch
+      const reward2 = ethers.parseEther('1000');
+      await proxyMxcTokenMock.approve(l1StakingAddress, reward2);
+      await proxyL1StakingMock['stakingDepositReward(uint256)'](reward2);
+      current_epoch++;
+      await proxyL1StakingMock.setCurrentEpoch(current_epoch);
+
+      // Amy will got 250, other will has 500.
+      expect(await amyZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('250'));
+      for (let i = 0; i < num_of_epoch_pass; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        expect(await memberZkCenter.stakeGetGrossReward()).to.equal(ethers.parseEther('500'));
+      }
+
+      // Claim all
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        await (await memberZkCenter.stakeClaimReward()).wait();
+      }     
+
+      // Clean up - Request, claim, withdraw
+      await (await amyZkCenter.stakeRequestWithdraw(false)).wait();
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        await (await memberZkCenter.stakeRequestWithdraw(false)).wait();
+      }
+      current_epoch += lock_period;
+      await proxyL1StakingMock.setCurrentEpoch(current_epoch);
+
+      await (await amyZkCenter.stakeClaimReward()).wait();
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        await (await memberZkCenter.stakeClaimReward()).wait();
+      }
+
+      await (await amyZkCenter.stakeWithdraw()).wait();
+      for (let i = 0; i < amy_member_count; i++) {
+        const memberZkCenter = await TestUtil.attachZkCenter(proxyZkCenter, amy_members[i]);
+        await (await memberZkCenter.stakeWithdraw()).wait();
+      }
+
+      // Delete group
+      await (await amyZkCenter.miningGroupDelete()).wait();
     });
   });
 });

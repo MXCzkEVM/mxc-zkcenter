@@ -24,9 +24,9 @@
       "deployer": "0x8fdDbE38F5bF4BAb62d3Bc5665B5126Db3a4eBE2",
       "contractFactoryName": "ZkCenter",
       "contractName2": "ZkCenter-v0",
-      "timeUpdated": "2025-04-17T16:07:06.318Z",
+      "timeUpdated": "2025-05-13T13:46:54.322Z",
       "proxyAddress": "0xcc271B2F8E28110bcA013067B64eD086c4FA0c9a",
-      "impAddress": "0x950D71f3eEF00e5F13224C3bf66cB38B1A49B157",
+      "impAddress": "0xfFc96e9e60Ea484075a8D45eED526253b75F803c",
       "expectedName2": "ZkCenter-v0"
     }
   ]

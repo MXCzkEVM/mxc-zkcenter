@@ -92,7 +92,7 @@ contract ZkCenter is
     }
 
     /// @notice Set Administration Fee and Commission Rate
-    function setFee(uint256 admin, uint256 commission) external onlyController {
+    function setFee(uint256 admin, uint256 commission) external nonReentrant onlyController {
         uint256 total = admin + commission;
         // Max limited to 90% both
         if (total > 9000) {
@@ -103,13 +103,13 @@ contract ZkCenter is
     }
 
     /// @notice Set Recipient for Administration Fee
-    function setAdminFeeRecipient(address recipient) external onlyController{
+    function setAdminFeeRecipient(address recipient) external nonReentrant onlyController{
         adminFeeRecipient = recipient;
     }
 
     /// @notice Set max reward amount ratio
     /// @param ratio The max claim ratio
-    function setMaxRewardRatio(uint256 ratio) external onlyController{
+    function setMaxRewardRatio(uint256 ratio) external nonReentrant onlyController{
         maxRewardRatio = ratio;
     }
 
@@ -397,6 +397,19 @@ contract ZkCenter is
         _stakeToGroupList[_msgSender()] = 0;
         l1Staking.stakingWithdrawal(_msgSender());
     }
+
+    //========================================================================
+    //========================================================================
+    /// @notice Deduct reward by 1 epoch (oldest one)
+    function penaltyDeductReward(address user) external nonReentrant onlyController{
+        l1Staking.pauseUserReward(user, 1);
+    }
+
+    /// @notice Slash the staked amount
+    function penaltySlashStaked(address user, uint256 rate) external nonReentrant onlyController{
+        l1Staking.stakingSlashing(user, rate);
+    }
+
 
     //========================================================================
     // Internal functions

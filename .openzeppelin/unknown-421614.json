@@ -1439,6 +1439,275 @@
         },
         "namespaces": {}
       }
+    },
+    "e4bb2dc91422d3b0cb1192c61f7b0da63a1f918d4c8994aa7d23efc5734ddc70": {
+      "address": "0xfFc96e9e60Ea484075a8D45eED526253b75F803c",
+      "txHash": "0x0652e1ce164ae3033a17c7d47087236d1332da70f46358c452aab18227de900b",
+      "layout": {
+        "solcVersion": "0.8.27",
+        "storage": [
+          {
+            "label": "_initialized",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint8",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:63",
+            "retypedFrom": "bool"
+          },
+          {
+            "label": "_initializing",
+            "offset": 1,
+            "slot": "0",
+            "type": "t_bool",
+            "contract": "Initializable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:68"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ERC1967UpgradeUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/ERC1967/ERC1967UpgradeUpgradeable.sol:169"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "51",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "UUPSUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol:111"
+          },
+          {
+            "label": "_status",
+            "offset": 0,
+            "slot": "101",
+            "type": "t_uint256",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:38"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "102",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "ReentrancyGuardUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol:88"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "151",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "ContextUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol:40"
+          },
+          {
+            "label": "_owner",
+            "offset": 0,
+            "slot": "201",
+            "type": "t_address",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:22"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "202",
+            "type": "t_array(t_uint256)49_storage",
+            "contract": "OwnableUpgradeable",
+            "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:94"
+          },
+          {
+            "label": "controllers",
+            "offset": 0,
+            "slot": "251",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "ControllableAndOwnable",
+            "src": "contracts/common/ControllableAndOwnable.sol:7"
+          },
+          {
+            "label": "_minerRegistration",
+            "offset": 0,
+            "slot": "252",
+            "type": "t_mapping(t_uint256,t_address)",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:17"
+          },
+          {
+            "label": "_stakeToGroupList",
+            "offset": 0,
+            "slot": "253",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:18"
+          },
+          {
+            "label": "_groupMemberList",
+            "offset": 0,
+            "slot": "254",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:19"
+          },
+          {
+            "label": "_groupMemberListIndex",
+            "offset": 0,
+            "slot": "255",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:20"
+          },
+          {
+            "label": "_commissionPool",
+            "offset": 0,
+            "slot": "256",
+            "type": "t_mapping(t_address,t_uint256)",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:22"
+          },
+          {
+            "label": "sgxMinerToken",
+            "offset": 0,
+            "slot": "257",
+            "type": "t_contract(ISgxMinerToken)6961",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:25"
+          },
+          {
+            "label": "miningGroupToken",
+            "offset": 0,
+            "slot": "258",
+            "type": "t_contract(IMiningGroupToken)6571",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:26"
+          },
+          {
+            "label": "l1Staking",
+            "offset": 0,
+            "slot": "259",
+            "type": "t_contract(IL1Staking)16870",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:27"
+          },
+          {
+            "label": "mxcToken",
+            "offset": 0,
+            "slot": "260",
+            "type": "t_contract(IMxcToken)16890",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:28"
+          },
+          {
+            "label": "adminFee",
+            "offset": 0,
+            "slot": "261",
+            "type": "t_uint256",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:30"
+          },
+          {
+            "label": "commissionRate",
+            "offset": 0,
+            "slot": "262",
+            "type": "t_uint256",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:31"
+          },
+          {
+            "label": "maxRewardRatio",
+            "offset": 0,
+            "slot": "263",
+            "type": "t_uint256",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:32"
+          },
+          {
+            "label": "adminFeeRecipient",
+            "offset": 0,
+            "slot": "264",
+            "type": "t_address",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:33"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "265",
+            "type": "t_array(t_uint256)50_storage",
+            "contract": "Storage1",
+            "src": "contracts/ZkCenter/Storage1.sol:36"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)49_storage": {
+            "label": "uint256[49]",
+            "numberOfBytes": "1568"
+          },
+          "t_array(t_uint256)50_storage": {
+            "label": "uint256[50]",
+            "numberOfBytes": "1600"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_contract(IL1Staking)16870": {
+            "label": "contract IL1Staking",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IMiningGroupToken)6571": {
+            "label": "contract IMiningGroupToken",
+            "numberOfBytes": "20"
+          },
+          "t_contract(IMxcToken)16890": {
+            "label": "contract IMxcToken",
+            "numberOfBytes": "20"
+          },
+          "t_contract(ISgxMinerToken)6961": {
+            "label": "contract ISgxMinerToken",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_address)": {
+            "label": "mapping(uint256 => address)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint8": {
+            "label": "uint8",
+            "numberOfBytes": "1"
+          }
+        },
+        "namespaces": {}
+      }
     }
   }
 }
